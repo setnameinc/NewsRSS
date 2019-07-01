@@ -1,28 +1,27 @@
 package com.setnameinc.newsrss.presenters
 
-import android.net.NetworkInfo
 import android.util.Log
-import com.github.pwittchen.reactivenetwork.library.rx2.Connectivity
 import com.setnameinc.newsrss.common.presenters.BaseMainPresenter
-import com.setnameinc.newsrss.common.presenters.BaseMainView
 import com.setnameinc.newsrss.domain.NewsInteractor
 import com.setnameinc.newsrss.entities.ModelOfNews
 import com.setnameinc.newsrss.ui.FragmentNewsView
-import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableObserver
-import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
 class NewsPresenter @Inject constructor(private val newsInteractor: NewsInteractor) :
     BaseMainPresenter<FragmentNewsView>(), NewsPresenterInterface {
 
+    private val disposableBag: CompositeDisposable = CompositeDisposable()
+
     private val TAG = this::class.java.simpleName
 
-    private var lastLoaded = 1
+    private var lastLoaded = 2
+    private var lastLoadedFromCache: Pair<Long, Long> = 0L to 8L
 
     override fun onStart() {
 
-        newsInteractor.execute("${lastLoaded}", object : DisposableObserver<List<ModelOfNews>>() {
+        newsInteractor.executeRemote("${lastLoaded}", object : DisposableObserver<List<ModelOfNews>>() {
 
             override fun onComplete() {
 
@@ -38,7 +37,46 @@ class NewsPresenter @Inject constructor(private val newsInteractor: NewsInteract
 
             override fun onNext(t: List<ModelOfNews>) {
 
-                Log.i(TAG, "onNext| list = ${t}")
+                newsInteractor.insetNews(t)
+
+                Log.i(TAG, "onNext | Remote | list = ${t}")
+
+                /*view*/
+
+            }
+
+        })
+
+        newsInteractor.executeCache(lastLoadedFromCache, object : DisposableObserver<List<ModelOfNews>>() {
+
+            override fun onComplete() {
+
+
+            }
+
+            override fun onError(e: Throwable) {
+
+                Log.i(TAG, "onError| ${e?.message}")
+
+            }
+
+            override fun onNext(t: List<ModelOfNews>) {
+
+                if (t.size < 10) {
+
+                    //no mote models in DB
+                    lastLoadedFromCache = 0L to 0L
+
+                } else {
+
+                    //have data in DB
+                    lastLoadedFromCache = lastLoadedFromCache.first + 10 to lastLoadedFromCache.second + 10
+
+                }
+
+                val list = t.distinct()
+
+                Log.i(TAG, "onNext | Cache | onNext = ${list}")
 
                 /*view*/
 
@@ -49,6 +87,8 @@ class NewsPresenter @Inject constructor(private val newsInteractor: NewsInteract
     }
 
     override fun onStop() {
+
+        disposableBag.clear()
 
     }
 

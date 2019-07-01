@@ -7,11 +7,14 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.setnameinc.newsrss.remote.RemoteDao
 import com.setnameinc.newsrss.utils.constants.RemoteModuleUtils
+import com.setnameinc.newsrss.utils.constants.Schedulers
 import dagger.Module
 import dagger.Provides
+import io.reactivex.Scheduler
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -34,10 +37,14 @@ class RemoteModule(private val context: Context) {
     @Singleton
     fun provideGeneralServices(retrofit: Retrofit): RemoteDao = retrofit.create(RemoteDao::class.java)
 
-    /*@Provides
+    @Provides
     @Singleton
-    fun provideNetworkListener(context: Context):io.reactivex.Observable<Connectivity> =
-        ReactiveNetwork.observeNetworkConnectivity(context?.applicationContext)
-*/
+    fun provideNetworkListener(
+        context: Context, @Named(Schedulers.JOB) jobScheduler: Scheduler,
+        @Named(Schedulers.UI) uiScheduler: Scheduler
+    ): io.reactivex.Observable<Connectivity> =
+        ReactiveNetwork.observeNetworkConnectivity(context.applicationContext)
+            .subscribeOn(jobScheduler)
+            .observeOn(uiScheduler)
 
 }

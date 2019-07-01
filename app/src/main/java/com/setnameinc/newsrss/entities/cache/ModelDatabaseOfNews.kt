@@ -7,15 +7,15 @@ import com.setnameinc.newsrss.entities.ModelOfNews
 
 @Entity(tableName = "news")
 data class ModelDatabaseOfNews(
-    @PrimaryKey
-    val id: Long,
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
     @ColumnInfo
     val modelOfNews: ModelDatabaseModelOfNews)
 
 data class ModelDatabaseModelOfNews(
-    val title: String,
-    val urlToImage: String,
-    val description: String,
-    val publishedAt: String,
-    val url: String
+    val title: String = "",
+    val urlToImage: String = "",
+    val description: String = "",
+    val publishedAt: String = "",
+    val url: String = ""
 )

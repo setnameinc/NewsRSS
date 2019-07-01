@@ -2,6 +2,7 @@ package com.setnameinc.newsrss.di
 
 import android.content.Context
 import androidx.room.Room
+import com.setnameinc.newsrss.cache.dao.DatabaseDao
 import com.setnameinc.newsrss.cache.database.Database
 import dagger.Module
 import dagger.Provides
@@ -25,6 +26,6 @@ class CacheModule(private val context: Context) {
 
     @Provides
     @Singleton
-    fun provideDatabaseDAO(database: Database) = database.databaseDao()
+    fun provideDatabaseDAO(database: Database):DatabaseDao = database.databaseDao()
 
 }

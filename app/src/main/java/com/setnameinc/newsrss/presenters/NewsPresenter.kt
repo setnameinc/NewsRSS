@@ -2,98 +2,136 @@ package com.setnameinc.newsrss.presenters
 
 import android.util.Log
 import com.setnameinc.newsrss.common.presenters.BaseMainPresenter
-import com.setnameinc.newsrss.domain.NewsInteractor
+import com.setnameinc.newsrss.domain.NewsBaseNewsInteractor
 import com.setnameinc.newsrss.entities.ModelOfNews
 import com.setnameinc.newsrss.ui.FragmentNewsView
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableObserver
+import io.reactivex.subjects.PublishSubject
 import javax.inject.Inject
 
-class NewsPresenter @Inject constructor(private val newsInteractor: NewsInteractor) :
+class NewsPresenter @Inject constructor(private val newsInteractor: NewsBaseNewsInteractor) :
     BaseMainPresenter<FragmentNewsView>(), NewsPresenterInterface {
 
     private val disposableBag: CompositeDisposable = CompositeDisposable()
 
     private val TAG = this::class.java.simpleName
 
-    private var lastLoaded = 2
-    private var lastLoadedFromCache: Pair<Long, Long> = 0L to 8L
+    private var limit: Int = 20
+
+    private val lastLoadedCache = PublishSubject.create<Int>()
+    private val lastLoadedRemote = PublishSubject.create<Int>()
 
     override fun onStart() {
 
-        newsInteractor.executeRemote("${lastLoaded}", object : DisposableObserver<List<ModelOfNews>>() {
+        newsInteractor.initPresenter(this)
 
-            override fun onComplete() {
+        val dispatcher = lastLoadedCache.subscribe {
 
-                lastLoaded++
+            newsInteractor.executeCacheSingle(
+                it * limit to (it * limit + limit - 1),
+                object : DisposableObserver<List<ModelOfNews>>() {
 
-            }
+                    override fun onComplete() {
 
-            override fun onError(e: Throwable) {
+                    }
 
-                Log.i(TAG, "onError| ${e?.message}")
+                    override fun onNext(list: List<ModelOfNews>) {
 
-            }
+                        Log.i(TAG, "Cache | loaded list from DB(${it * limit to (it * limit + limit - 1)})")
 
-            override fun onNext(t: List<ModelOfNews>) {
+                        Log.i(TAG, "Cache | list size = ${list.size}")
 
-                newsInteractor.insetNews(t)
+                        if (list.isEmpty()) {
 
-                Log.i(TAG, "onNext | Remote | list = ${t}")
+                            lastLoadedRemote.onNext(it)
 
-                /*view*/
+                        } else {
 
-            }
+                            view.loadList(list)
 
-        })
+                        }
 
-        newsInteractor.executeCache(lastLoadedFromCache, object : DisposableObserver<List<ModelOfNews>>() {
+                    }
 
-            override fun onComplete() {
+                    override fun onError(e: Throwable) {
+
+                        Log.i(TAG, "onError| ${e.message}")
+
+                    }
+
+                })
+
+        }
+
+        val dispatcher1 = lastLoadedRemote.subscribe {
+
+            newsInteractor.executeRemoteObservable(
+                it + 1,
+                object : DisposableObserver<List<ModelOfNews>>() {
+
+                    override fun onComplete() {
 
 
-            }
+                    }
 
-            override fun onError(e: Throwable) {
+                    override fun onError(e: Throwable) {
 
-                Log.i(TAG, "onError| ${e?.message}")
+                        Log.i(TAG, "onError| ${e.message}")
 
-            }
+                    }
 
-            override fun onNext(t: List<ModelOfNews>) {
+                    override fun onNext(list: List<ModelOfNews>) {
 
-                if (t.size < 10) {
+                        Log.i(TAG, "Remote | list size = ${list.size}")
 
-                    //no mote models in DB
-                    lastLoadedFromCache = 0L to 0L
+                        newsInteractor.insetNews(list)
 
-                } else {
+                    }
 
-                    //have data in DB
-                    lastLoadedFromCache = lastLoadedFromCache.first + 10 to lastLoadedFromCache.second + 10
+                })
 
-                }
+        }
 
-                val list = t.distinct()
-
-                Log.i(TAG, "onNext | Cache | onNext = ${list}")
-
-                /*view*/
-
-            }
-
-        })
+        disposableBag.add(dispatcher)
+        disposableBag.add(dispatcher1)
 
     }
 
     override fun onStop() {
 
+        newsInteractor.removePresenter()
+
         disposableBag.clear()
 
     }
 
+    override fun loadFrom(pos: Int) {
+
+        Log.i(TAG, "last loaded = $pos")
+
+        this.lastLoadedCache.onNext(pos)
+
+    }
+
+    override fun onConnected() {
+
+    }
+
+    override fun onDisconnected() {
+
+        view.onDisconnected()
+
+    }
+
+
 }
 
 interface NewsPresenterInterface {
+
+    fun loadFrom(pos: Int)
+
+    fun onConnected()
+    fun onDisconnected()
 
 }

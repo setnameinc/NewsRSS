@@ -12,6 +12,6 @@ interface RemoteDao {
                 @Query(value = "from") date: String = "2019-04-00",
                 @Query(value = "sortBy") sortBy:String = "publishedAt",
                 @Query(value = "apiKey") apiKey:String = "26eddb253e7840f988aec61f2ece2907",
-                @Query(value = "page") page:String = "1"): Observable<ModelNewsResponse>
+                @Query(value = "page") page:Int): Observable<ModelNewsResponse>
 
 }

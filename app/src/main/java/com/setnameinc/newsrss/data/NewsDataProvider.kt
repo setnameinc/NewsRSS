@@ -10,8 +10,8 @@ import io.reactivex.Observable
 import javax.inject.Inject
 
 interface NewsDataProvider {
-    fun getRemoteNews(page: String): Observable<List<ModelOfNews>>
-    fun getCacheNews(from: Long, to: Long): Observable<List<ModelOfNews>>
+    fun getRemoteNewsObservable(page: Int): Observable<List<ModelOfNews>>
+    fun getCacheNewsSingle(pair: Pair<Int, Int>): Observable<List<ModelOfNews>>
     fun insertNews(listOfNews: List<ModelOfNews>)
 }
 
@@ -20,29 +20,14 @@ class NewsDataProviderImpl @Inject constructor(val remoteDao: RemoteDao, val dat
 
     private val TAG = this::class.java.simpleName
 
-    override fun getRemoteNews(page: String): Observable<List<ModelOfNews>> = remoteDao.getUser(page = page).map {
-        it.articles
-    }
-
-    override fun getCacheNews(from: Long, to: Long): Observable<List<ModelOfNews>> =
-        databaseDao.getNewsWithLimit(from, to).map { it ->
-
-            it.map {
-                ModelOfNews(
-                    it.id,
-                    it.modelOfNews.title?: "",
-                    it.modelOfNews.urlToImage?: "",
-                    it.modelOfNews.description?: "",
-                    it.modelOfNews.publishedAt?: "",
-                    it.modelOfNews.url?: ""
-                )
-            }
-
+    override fun getRemoteNewsObservable(page: Int): Observable<List<ModelOfNews>> =
+        remoteDao.getUser(page = page).map {
+            it.articles
         }
 
     override fun insertNews(listOfNews: List<ModelOfNews>) {
 
-        val list1 = listOfNews.map {
+        val listFromRemote = listOfNews.map {
 
             ModelDatabaseModelOfNews(
                 it.title ?: "",
@@ -54,32 +39,86 @@ class NewsDataProviderImpl @Inject constructor(val remoteDao: RemoteDao, val dat
 
         }
 
-        val list2 = databaseDao.getAllNews().map {
-            ModelDatabaseModelOfNews(
-                it.modelOfNews.title ?: "",
-                it.modelOfNews.urlToImage ?: "",
-                it.modelOfNews.description ?: "",
-                it.modelOfNews.publishedAt ?: "",
-                it.modelOfNews.url ?: ""
-            )
+        val listFromCache = databaseDao.getAllNews()
+
+        val listForRetain = ArrayList(listFromRemote)
+
+        listForRetain.retainAll(listFromCache)
+
+        Log.i(TAG, "remote list size = ${listFromRemote.size}")
+
+        Log.i(TAG, "cache list size = ${listFromCache.size}")
+
+        val resultList: List<ModelDatabaseModelOfNews>
+
+        when {
+            listFromCache.containsAll(listFromRemote) -> {
+
+                //MARK: all lines already in DB
+
+                Log.i(TAG, "duplicated")
+
+                resultList = arrayListOf()
+
+            }
+            listForRetain.size == 0 -> {
+
+                //MARK: no common lines
+
+                Log.i(TAG, "insert full remote list, list size = ${listFromRemote.size}")
+
+                resultList = listFromRemote
+
+            }
+            else -> resultList = if (listFromCache.size > listFromRemote.size) {
+
+                Log.i(TAG, "insert db list minus remote list")
+
+                listFromCache.minus(listFromRemote)
+
+            } else {
+
+                Log.i(TAG, "insert remote list minus db list")
+
+                listFromRemote.minus(listFromCache)
+
+            }
         }
 
-        var resultList: List<ModelDatabaseModelOfNews>
+        var lastIndex = databaseDao.getLastIndex()
 
-        if (list2.size > list1.size) {
+        val insetList = mutableListOf<ModelDatabaseOfNews>()
 
-            resultList = list2.minus(list1)
+        for (i in resultList) {
 
-        } else {
+            lastIndex++
 
-            resultList = list1.minus(list2)
+            insetList.add(ModelDatabaseOfNews(lastIndex, i))
 
         }
 
-        Log.i(TAG, "this list was input: $resultList")
+        Log.i(TAG, "db list size = ${listFromCache.size}")
 
-        resultList.forEach { databaseDao.insertListOfNews(ModelDatabaseOfNews(modelOfNews = it)) }
+        databaseDao.insertListOfNews(insetList)
+
+        Log.i(TAG, "db list size = ${databaseDao.getAllNews().size}")
 
     }
+
+    override fun getCacheNewsSingle(pair: Pair<Int, Int>): Observable<List<ModelOfNews>> =
+        databaseDao.getNewsWithLimit(pair.first, pair.second).map { it ->
+
+            it.map {
+                ModelOfNews(
+                    it.id,
+                    it.modelOfNews.title ?: "",
+                    it.modelOfNews.urlToImage ?: "",
+                    it.modelOfNews.description ?: "",
+                    it.modelOfNews.publishedAt ?: "",
+                    it.modelOfNews.url ?: ""
+                )
+            }
+
+        }
 
 }

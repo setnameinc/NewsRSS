@@ -16,7 +16,7 @@ abstract class ListNews{
     enum class ListNewsType(val type: Int) {
 
         POST(0),
-        UPDATE(1)
+        UPDATE(1);
 
     }
 

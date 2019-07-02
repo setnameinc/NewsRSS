@@ -76,17 +76,22 @@ class FragmentNews : BaseFragment(), FragmentNewsView, NewsAdapterClickListener,
     }
 
     override fun onBottomReached(position: Int) {
+
+        Log.i(TAG, "Bottom reached")
+
         newsPresenter.loadFrom(position / 10)
+
     }
 
     override fun onDisconnected() {
+        Log.i(TAG, "onDisconnected")
         listOfNews.add(ModelOfUpdate(""))
         newsAdapter.notifyItemInserted(listOfNews.lastIndex)
     }
 
     override fun onConnected() {
-        listOfNews.removeAt(listOfNews.lastIndex)
-        newsAdapter.notifyItemRemoved(listOfNews.lastIndex)
+        Log.i(TAG, "onConnected")
+        listOfNews.remove(ModelOfUpdate(""))
     }
 
 

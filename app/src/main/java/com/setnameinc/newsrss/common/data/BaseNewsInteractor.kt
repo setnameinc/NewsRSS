@@ -1,6 +1,7 @@
 package com.setnameinc.newsrss.common.data
 
 import android.net.NetworkInfo
+import android.util.Log
 import com.github.pwittchen.reactivenetwork.library.rx2.Connectivity
 import io.reactivex.Observable
 import io.reactivex.Scheduler
@@ -15,10 +16,13 @@ abstract class BaseNewsInteractor <ResultType, ParameterRemoteType, ParameterCac
     protected open val networkListener: Observable<Connectivity>
 ) {
 
+    private val TAG = BaseNewsInteractor::class.java.simpleName
+
     protected abstract fun onConnected()
     protected abstract fun onDisconnected()
 
     private val subscription = CompositeDisposable()
+    private val internetSubscription = CompositeDisposable()
 
     protected abstract fun buildRemoteObservable(parameter: ParameterRemoteType): Observable<ResultType>
     protected abstract fun buildCacheObserable(parameter: ParameterCacheType) : Observable<ResultType>
@@ -32,6 +36,8 @@ abstract class BaseNewsInteractor <ResultType, ParameterRemoteType, ParameterCac
 
                     NetworkInfo.State.CONNECTED -> {
 
+                        Log.i(TAG, "connected")
+
                         onConnected()
 
                         val dispose = buildRemoteObservable(parameterRemote)
@@ -39,15 +45,23 @@ abstract class BaseNewsInteractor <ResultType, ParameterRemoteType, ParameterCac
                             .observeOn(uiScheduler)
                             .subscribeWith(subscriber)
 
+                        internetSubscription.add(dispose)
+
                     }
 
                     NetworkInfo.State.DISCONNECTED -> {
 
+                        Log.i(TAG, "disconnected")
+
                         onDisconnected()
+
+                        internetSubscription.clear()
 
                     }
 
                     else -> {
+
+                        Log.i(TAG, "state = ${connectivity.state()}")
 
                     }
                 }
@@ -59,7 +73,7 @@ abstract class BaseNewsInteractor <ResultType, ParameterRemoteType, ParameterCac
 
     }
 
-    fun executeCacheSingle(parameterCache: ParameterCacheType, subscriber: DisposableObserver<ResultType>){
+    fun executeCacheObservable(parameterCache: ParameterCacheType, subscriber: DisposableObserver<ResultType>){
 
         subscription.add(
             buildCacheObserable(parameterCache)
@@ -72,6 +86,7 @@ abstract class BaseNewsInteractor <ResultType, ParameterRemoteType, ParameterCac
 
     fun unsubscribe() {
         subscription.clear()
+        internetSubscription.clear()
     }
 
 }

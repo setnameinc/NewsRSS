@@ -23,14 +23,26 @@
         android:id="@+id/item_news_update__tv_try"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
         android:layout_marginTop="24dp"
         android:layout_marginBottom="16dp"
         android:fontFamily="@font/lato"
+        android:gravity="center_vertical"
         android:text="Click to try again"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/item_news_update__no_internet"
         app:layout_constraintTop_toBottomOf="@+id/item_news_update__no_internet" />
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginBottom="0dp"
+        android:indeterminate="true"
+        android:indeterminateTint="#757575"
+        app:layout_constraintBottom_toBottomOf="@+id/item_news_update__tv_try"
+        app:layout_constraintStart_toEndOf="@+id/item_news_update__tv_try"
+        app:layout_constraintTop_toTopOf="@+id/item_news_update__tv_try" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

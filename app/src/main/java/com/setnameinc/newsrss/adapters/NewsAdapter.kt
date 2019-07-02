@@ -13,6 +13,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.setnameinc.newsrss.R
 import com.setnameinc.newsrss.entities.ListNews
 import com.setnameinc.newsrss.entities.ModelOfNews
+import com.setnameinc.newsrss.entities.adapters.ModelOfUpdate
 import com.setnameinc.newsrss.ui.OnBottomReachedListener
 
 class NewsAdapter(
@@ -26,12 +27,15 @@ class NewsAdapter(
 
     private var currentPos = 0
 
-    override fun onCreateViewHolder(parent: ViewGroup, position: Int): ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, position: Int): ViewHolder<*> {
 
         val viewViewHolder: View
-        return when (getItemViewType(position)) {
+        return when (position) {
 
             ListNews.ListNewsType.POST.type -> {
+
+                /*Log.i(TAG, "OnCreateViewHolder | post type, position = $position")*/
+
                 viewViewHolder =
                     LayoutInflater.from(parent.context).inflate(R.layout.item_news_post, parent, false)
 
@@ -40,6 +44,9 @@ class NewsAdapter(
             }
 
             ListNews.ListNewsType.UPDATE.type -> {
+
+                /*Log.i(TAG, "OnCreateViewHolder | update type, position = $position")*/
+
                 viewViewHolder =
                     LayoutInflater.from(parent.context).inflate(R.layout.item_news_update, parent, false)
 
@@ -54,6 +61,22 @@ class NewsAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
 
+        val listWelcome: ListNews = items[position]
+
+        Log.i(
+            TAG,
+            "onBindViewHolder | list size = ${items.size}, pos = $position, type = ${listWelcome.getListItemType()}"
+        )
+
+        when (holder) {
+            is ViewHolderPost -> holder.bindType(
+                listWelcome as ModelOfNews
+            )
+            is ViewHolderUpdate -> holder.bindType(
+                listWelcome as ModelOfUpdate
+            )
+        }
+
         if (items.size > 0) {
 
             if (position == items.lastIndex) {
@@ -62,30 +85,10 @@ class NewsAdapter(
 
         }
 
-        val listWelcome: ListNews = items[position]
-        when (getItemViewType(position)) {
-
-            ListNews.ListNewsType.POST.type -> {
-
-                (holder as ViewHolderPost).bindType(
-                    listWelcome
-                )
-
-            }
-
-            ListNews.ListNewsType.UPDATE.type -> {
-
-                (holder as ViewHolderUpdate).bindType(
-                    listWelcome
-                )
-                
-            }
-
-        }
     }
 
     inner class ViewHolderPost(private val mView: View, private val adapterClickListener: NewsAdapterClickListener) :
-        ViewHolder(mView), View.OnClickListener {
+        ViewHolder<ModelOfNews>(mView), View.OnClickListener {
 
         init {
 
@@ -94,6 +97,7 @@ class NewsAdapter(
         }
 
         override fun onClick(p0: View?) {
+
             if (currentPos != adapterPosition) {
 
                 currentPos = adapterPosition
@@ -101,17 +105,16 @@ class NewsAdapter(
                 notifyItemChanged(adapterPosition)
 
             }
+
         }
 
-        override fun bindType(listWelcome: ListNews) {
+        override fun bindType(listWelcome: ModelOfNews) {
 
-            val modelOfNews = listWelcome as ModelOfNews
-
-            setPost(modelOfNews)
+            setPost(listWelcome)
 
             if (adapterPosition == currentPos) {
 
-                setClickListener(modelOfNews.url)
+                setClickListener(listWelcome.url)
 
             }
 
@@ -146,23 +149,38 @@ class NewsAdapter(
     private class ViewHolderUpdate(
         private val mView: View,
         private val adapterClickListener: NewsAdapterClickListener
-    ) : ViewHolder(mView) {
+    ) : ViewHolder<ModelOfUpdate>(mView) {
 
-        override fun bindType(listWelcome: ListNews) {
+        override fun bindType(listWelcome: ModelOfUpdate) {
 
+            setView()
+
+        }
+
+        fun setView() {
 
         }
 
 
     }
 
-    abstract class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    abstract class ViewHolder<T>(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        abstract fun bindType(listWelcome: ListNews)
+        abstract fun bindType(listWelcome: T)
 
     }
 
-    override fun getItemViewType(position: Int): Int  = items[position].getListItemType()
+    override fun getItemViewType(position: Int): Int = when (items[position]) {
+
+        is ModelOfNews -> {
+            ListNews.ListNewsType.POST.type
+        }
+        is ModelOfUpdate -> {
+            ListNews.ListNewsType.UPDATE.type
+        }
+        else -> throw IllegalArgumentException("Invalid type of data " + position)
+
+    }
 
 
     override fun getItemCount(): Int = items.size

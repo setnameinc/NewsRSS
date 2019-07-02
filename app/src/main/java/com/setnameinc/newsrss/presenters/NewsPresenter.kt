@@ -19,6 +19,8 @@ class NewsPresenter @Inject constructor(private val newsInteractor: NewsBaseNews
 
     private var limit: Int = 20
 
+    var internetAvailable = true
+
     private val lastLoadedCache = PublishSubject.create<Int>()
     private val lastLoadedRemote = PublishSubject.create<Int>()
 
@@ -28,7 +30,7 @@ class NewsPresenter @Inject constructor(private val newsInteractor: NewsBaseNews
 
         val dispatcher = lastLoadedCache.subscribe {
 
-            newsInteractor.executeCacheSingle(
+            newsInteractor.executeCacheObservable(
                 it * limit to (it * limit + limit - 1),
                 object : DisposableObserver<List<ModelOfNews>>() {
 
@@ -108,17 +110,27 @@ class NewsPresenter @Inject constructor(private val newsInteractor: NewsBaseNews
 
     override fun loadFrom(pos: Int) {
 
-        Log.i(TAG, "last loaded = $pos")
+        if (internetAvailable) {
 
-        this.lastLoadedCache.onNext(pos)
+            Log.i(TAG, "last loaded = $pos")
+
+            this.lastLoadedCache.onNext(pos)
+
+        }
 
     }
 
     override fun onConnected() {
 
+        internetAvailable = true
+
+        view.onConnected()
+
     }
 
     override fun onDisconnected() {
+
+        internetAvailable = false
 
         view.onDisconnected()
 

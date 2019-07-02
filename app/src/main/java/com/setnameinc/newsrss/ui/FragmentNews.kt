@@ -3,6 +3,7 @@ package com.setnameinc.newsrss.ui
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.setnameinc.newsrss.App
 import com.setnameinc.newsrss.R
@@ -15,6 +16,7 @@ import com.setnameinc.newsrss.entities.ListNews
 import com.setnameinc.newsrss.entities.adapters.ModelOfUpdate
 import com.setnameinc.newsrss.presenters.NewsPresenter
 import com.setnameinc.newsrss.utils.annotations.Layout
+import com.setnameinc.newsrss.viewmodels.NewsViewModel
 import kotlinx.android.synthetic.main.fragment_news.*
 import javax.inject.Inject
 
@@ -23,28 +25,41 @@ class FragmentNews : BaseFragment(), FragmentNewsView, NewsAdapterClickListener,
 
     private val TAG = this::class.java.simpleName
 
-    var listOfNews = arrayListOf<ListNews>()
-
-    @Inject
-    lateinit var newsPresenter: NewsPresenter
-
     override fun getPresenter(): BasePresenter<*, *> = newsPresenter
 
     override fun inject() {
         App.appComponent.inject(this)
     }
 
-    lateinit var newsAdapter: NewsAdapter
+    @Inject
+    lateinit var newsPresenter: NewsPresenter
+
+    private lateinit var newsAdapter: NewsAdapter
+    private lateinit var linearLayoutManager: LinearLayoutManager
+
+    private var newsViewModel: NewsViewModel? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        if (newsViewModel == null) {
+            newsViewModel = ViewModelProviders.of(activity!!).get(NewsViewModel::class.java)
+        }
+
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        newsAdapter = NewsAdapter(listOfNews, this, this)
+        Log.i(TAG, "onViewCreated | ")
+
+        newsAdapter = NewsAdapter(newsViewModel!!.allNews, this, this)
+        linearLayoutManager = LinearLayoutManager(this.context?.applicationContext)
 
         fragment_news__rv.apply {
 
             adapter = newsAdapter
-            layoutManager = LinearLayoutManager(this.context.applicationContext)
+            layoutManager = linearLayoutManager
 
         }
 
@@ -53,21 +68,44 @@ class FragmentNews : BaseFragment(), FragmentNewsView, NewsAdapterClickListener,
     override fun onStart() {
         super.onStart()
 
-        newsPresenter.loadFrom(0 / 10)
+        if (newsViewModel!!.allNews.size == 0) {
+
+            Log.i(TAG, "load list")
+
+            newsPresenter.loadFrom(0 / 10)
+
+        } else if ( (newsViewModel!!.position != 0) ) {
+
+            fragment_news__rv.scrollToPosition(newsViewModel!!.position)
+
+            Log.i(TAG, "onStart | pos = ${newsViewModel!!.position}")
+
+        }
 
     }
 
-    override fun showError(string: String) {
-        //
+    override fun onStop() {
+        super.onStop()
+
+        if (newsViewModel!!.position == 0) {
+
+            newsViewModel!!.position = linearLayoutManager.findFirstVisibleItemPosition()
+
+        }
+
     }
 
     override fun loadList(listNews: List<ListNews>) {
-        //some bug
-        if (listOfNews.size > listNews.size) {
-            listOfNews.addAll(listOfNews.minus(listNews))
+        //some bugs :(
+        val listResult = arrayListOf<ListNews>()
+        if (newsViewModel!!.allNews.size > listNews.size) {
+            listResult.addAll(newsViewModel!!.allNews.minus(listNews))
         } else {
-            listOfNews.addAll(listNews.minus(listOfNews))
+            listResult.addAll(listNews.minus(newsViewModel!!.allNews))
         }
+
+        newsViewModel!!.addToAllNews(listResult)
+
         newsAdapter.notifyDataSetChanged()
     }
 
@@ -85,13 +123,13 @@ class FragmentNews : BaseFragment(), FragmentNewsView, NewsAdapterClickListener,
 
     override fun onDisconnected() {
         Log.i(TAG, "onDisconnected")
-        listOfNews.add(ModelOfUpdate(""))
-        newsAdapter.notifyItemInserted(listOfNews.lastIndex)
+        newsViewModel!!.allNews.add(ModelOfUpdate(""))
+        newsAdapter.notifyItemInserted(newsViewModel!!.allNews.lastIndex)
     }
 
     override fun onConnected() {
         Log.i(TAG, "onConnected")
-        listOfNews.remove(ModelOfUpdate(""))
+        newsViewModel!!.allNews.remove(ModelOfUpdate(""))
     }
 
 

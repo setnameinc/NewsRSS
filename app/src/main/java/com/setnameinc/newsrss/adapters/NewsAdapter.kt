@@ -25,16 +25,16 @@ class NewsAdapter(
 
     private val TAG = this::class.java.simpleName
 
-    private var currentPos = 0
+    private var currentPosForClickListener = 0
 
-    override fun onCreateViewHolder(parent: ViewGroup, position: Int): ViewHolder<*> {
+    override fun onCreateViewHolder(parent: ViewGroup, type: Int): ViewHolder<*> {
 
         val viewViewHolder: View
-        return when (position) {
+        return when (type) {
 
             ListNews.ListNewsType.POST.type -> {
 
-                /*Log.i(TAG, "OnCreateViewHolder | post type, position = $position")*/
+                /*Log.i(TAG, "OnCreateViewHolder | post type, type = $type")*/
 
                 viewViewHolder =
                     LayoutInflater.from(parent.context).inflate(R.layout.item_news_post, parent, false)
@@ -45,7 +45,7 @@ class NewsAdapter(
 
             ListNews.ListNewsType.UPDATE.type -> {
 
-                /*Log.i(TAG, "OnCreateViewHolder | update type, position = $position")*/
+                /*Log.i(TAG, "OnCreateViewHolder | update type, type = $type")*/
 
                 viewViewHolder =
                     LayoutInflater.from(parent.context).inflate(R.layout.item_news_update, parent, false)
@@ -63,10 +63,9 @@ class NewsAdapter(
 
         val listWelcome: ListNews = items[position]
 
-        Log.i(
-            TAG,
+        /*Log.i(TAG,
             "onBindViewHolder | list size = ${items.size}, pos = $position, type = ${listWelcome.getListItemType()}"
-        )
+        )*/
 
         when (holder) {
             is ViewHolderPost -> holder.bindType(
@@ -98,9 +97,9 @@ class NewsAdapter(
 
         override fun onClick(p0: View?) {
 
-            if (currentPos != adapterPosition) {
+            if (currentPosForClickListener != adapterPosition) {
 
-                currentPos = adapterPosition
+                currentPosForClickListener = adapterPosition
 
                 notifyItemChanged(adapterPosition)
 
@@ -112,7 +111,7 @@ class NewsAdapter(
 
             setPost(listWelcome)
 
-            if (adapterPosition == currentPos) {
+            if (adapterPosition == currentPosForClickListener) {
 
                 setClickListener(listWelcome.url)
 

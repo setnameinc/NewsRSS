@@ -35,7 +35,7 @@ abstract class BaseActivity : AppCompatActivity(), BaseActivityInterface {
 
         if (justSimpleName?.toLowerCase()?.contains("fragment")!!) {
 
-            routerFirstLevel.navigateTo(Fragments(justSimpleName))
+            routerFirstLevel.newRootScreen(Fragments(justSimpleName))
 
         } else {
 

@@ -25,7 +25,11 @@ class ActivitySplashScreen : BaseSplashActivity (){
             .into(activity_splash_screen_iv_main)
 
         activity_splash_screen_btn_next.setOnClickListener {
+
+            //lazy to use cicerone :(
             startActivity(Intent(this.applicationContext, ActivityMain::class.java))
+            this.finish()
+            
         }
 
     }

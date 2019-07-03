@@ -7,31 +7,7 @@ import com.setnameinc.newsrss.utils.annotations.Layout
 import com.setnameinc.newsrss.utils.exceptions.BaseViewMissedAnnotationExceptionBuilder
 import com.setnameinc.newsrss.utils.exceptions.BaseViewMissedAnnotationExceptionInterface
 
-abstract class BaseSplashActivity : AppCompatActivity(),
-    BaseSplashActivityInterface {
-
-    private val TAG = this::class.java.simpleName
-
-    abstract fun inject()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        inject()
-
-        init()
-
-        Log.i(TAG, "onCreate | created")
-
-    }
-
-    override fun init() {
-
-        checkAnnotations()
-
-        setContentView((javaClass.getAnnotation(Layout::class.java) as Layout).id)
-
-    }
+abstract class BaseSplashActivity : BaseActivity(), BaseSplashActivityInterface {
 
     override fun checkAnnotations() {
 
@@ -46,7 +22,6 @@ abstract class BaseSplashActivity : AppCompatActivity(),
 
 interface BaseSplashActivityInterface {
 
-    fun init()
 
-    fun checkAnnotations()
+
 }

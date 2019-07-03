@@ -29,7 +29,7 @@ class ActivitySplashScreen : BaseSplashActivity (){
             //lazy to use cicerone :(
             startActivity(Intent(this.applicationContext, ActivityMain::class.java))
             this.finish()
-            
+
         }
 
     }

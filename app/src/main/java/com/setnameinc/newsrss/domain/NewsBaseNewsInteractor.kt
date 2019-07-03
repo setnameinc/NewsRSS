@@ -1,16 +1,14 @@
 package com.setnameinc.newsrss.domain
 
 import com.github.pwittchen.reactivenetwork.library.rx2.Connectivity
-import com.setnameinc.newsrss.common.data.BaseNewsInteractor
+import com.setnameinc.newsrss.common.domain.BaseNewsInteractor
 import com.setnameinc.newsrss.data.NewsDataProvider
 import com.setnameinc.newsrss.entities.ModelOfNews
-import com.setnameinc.newsrss.presenters.NewsPresenter
 import com.setnameinc.newsrss.presenters.NewsPresenterInterface
 import com.setnameinc.newsrss.utils.constants.Schedulers.JOB
 import com.setnameinc.newsrss.utils.constants.Schedulers.UI
 import io.reactivex.Observable
 import io.reactivex.Scheduler
-import io.reactivex.Single
 import javax.inject.Inject
 import javax.inject.Named
 

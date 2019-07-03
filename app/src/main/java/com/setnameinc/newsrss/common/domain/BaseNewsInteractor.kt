@@ -1,4 +1,4 @@
-package com.setnameinc.newsrss.common.data
+package com.setnameinc.newsrss.common.domain
 
 import android.net.NetworkInfo
 import android.util.Log

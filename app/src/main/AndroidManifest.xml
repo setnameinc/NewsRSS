@@ -12,18 +12,22 @@
             android:supportsRtl="true"
             android:name=".App"
             android:theme="@style/AppTheme" tools:ignore="GoogleAppIndexingWarning">
+
         <activity android:name=".ui.ActivityMain">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
         <activity android:name=".ui.ActivitySplashScreen"/>
-        <activity android:name=".ui.ActivityNewsWebView"/>
+
+        <activity android:name=".ui.ActivityNewsWebView" />
 
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
+
     </application>
 
 </manifest>

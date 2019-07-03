@@ -1,6 +1,5 @@
 package com.setnameinc.newsrss.cache.database
 
-
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.setnameinc.newsrss.cache.converters.ModelDatabaseNewsConverter

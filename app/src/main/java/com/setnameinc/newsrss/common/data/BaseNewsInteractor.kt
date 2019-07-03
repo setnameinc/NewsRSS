@@ -5,27 +5,23 @@ import android.util.Log
 import com.github.pwittchen.reactivenetwork.library.rx2.Connectivity
 import io.reactivex.Observable
 import io.reactivex.Scheduler
-import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableObserver
-import io.reactivex.observers.DisposableSingleObserver
 
-abstract class BaseNewsInteractor <ResultType, ParameterRemoteType, ParameterCacheType>(
-    protected open val jobScheduler: Scheduler,
-    protected open val uiScheduler: Scheduler,
+abstract class BaseNewsInteractor<ResultType, ParameterRemoteType, ParameterCacheType>(
+    override val jobScheduler: Scheduler,
+    override val uiScheduler: Scheduler,
     protected open val networkListener: Observable<Connectivity>
-) {
+) : BaseInteractor<ResultType, ParameterRemoteType, ParameterCacheType>(
+    jobScheduler = jobScheduler,
+    uiScheduler = uiScheduler) {
 
     private val TAG = BaseNewsInteractor::class.java.simpleName
 
-    protected abstract fun onConnected()
-    protected abstract fun onDisconnected()
-
-    private val subscription = CompositeDisposable()
     private val internetSubscription = CompositeDisposable()
 
-    protected abstract fun buildRemoteObservable(parameter: ParameterRemoteType): Observable<ResultType>
-    protected abstract fun buildCacheObserable(parameter: ParameterCacheType) : Observable<ResultType>
+    protected abstract fun onConnected()
+    protected abstract fun onDisconnected()
 
     fun executeRemoteObservable(parameterRemote: ParameterRemoteType, subscriber: DisposableObserver<ResultType>) {
 
@@ -73,10 +69,10 @@ abstract class BaseNewsInteractor <ResultType, ParameterRemoteType, ParameterCac
 
     }
 
-    fun executeCacheObservable(parameterCache: ParameterCacheType, subscriber: DisposableObserver<ResultType>){
+    fun executeCacheObservable(parameterCache: ParameterCacheType, subscriber: DisposableObserver<ResultType>) {
 
         subscription.add(
-            buildCacheObserable(parameterCache)
+            buildCacheObservable(parameterCache)
                 .subscribeOn(jobScheduler)
                 .observeOn(uiScheduler)
                 .subscribeWith(subscriber)
@@ -84,9 +80,11 @@ abstract class BaseNewsInteractor <ResultType, ParameterRemoteType, ParameterCac
 
     }
 
-    fun unsubscribe() {
-        subscription.clear()
+    override fun unsubscribe() {
+        super.unsubscribe()
+
         internetSubscription.clear()
+
     }
 
 }

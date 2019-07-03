@@ -54,7 +54,7 @@ class NewsDataProviderImpl @Inject constructor(val remoteDao: RemoteDao, val dat
         when {
             listFromCache.containsAll(listFromRemote) -> {
 
-                //MARK: all lines already in DB
+                //MARK: all data already in DB
 
                 Log.i(TAG, "duplicated")
 

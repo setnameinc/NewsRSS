@@ -45,7 +45,7 @@ class NewsBaseNewsInteractor @Inject constructor(
     override fun buildRemoteObservable(page: Int): Observable<List<ModelOfNews>> =
         newsDataProvider.getRemoteNewsObservable(page)
 
-    override fun buildCacheObserable(limit: Pair<Int, Int>): Observable<List<ModelOfNews>> =
+    override fun buildCacheObservable(limit: Pair<Int, Int>): Observable<List<ModelOfNews>> =
         newsDataProvider.getCacheNewsSingle(limit)
 
     fun insetNews(list: List<ModelOfNews>){

@@ -1,6 +1,5 @@
 package com.setnameinc.newsrss.adapters
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,7 +24,7 @@ class NewsAdapter(
 
     private val TAG = this::class.java.simpleName
 
-    private var currentPosForClickListener = 0
+    private var currentPosition = -1
 
     override fun onCreateViewHolder(parent: ViewGroup, type: Int): ViewHolder<*> {
 
@@ -97,9 +96,9 @@ class NewsAdapter(
 
         override fun onClick(p0: View?) {
 
-            if (currentPosForClickListener != adapterPosition) {
+            if (currentPosition != adapterPosition) {
 
-                currentPosForClickListener = adapterPosition
+                currentPosition = adapterPosition
 
                 notifyItemChanged(adapterPosition)
 
@@ -111,7 +110,7 @@ class NewsAdapter(
 
             setPost(listWelcome)
 
-            if (adapterPosition == currentPosForClickListener) {
+            if (adapterPosition == currentPosition) {
 
                 setClickListener(listWelcome.url)
 

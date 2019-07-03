@@ -19,7 +19,7 @@ class NewsPresenter @Inject constructor(private val newsInteractor: NewsBaseNews
 
     private var limit: Int = 20
 
-    var internetAvailable = true
+    private var internetAvailable = true
 
     private val lastLoadedCache = PublishSubject.create<Int>()
     private val lastLoadedRemote = PublishSubject.create<Int>()
@@ -29,6 +29,8 @@ class NewsPresenter @Inject constructor(private val newsInteractor: NewsBaseNews
         newsInteractor.initPresenter(this)
 
         val dispatcher = lastLoadedCache.subscribe {
+
+            Log.i(TAG, "Cache | parameter = ${it}")
 
             newsInteractor.executeCacheObservable(
                 it * limit to (it * limit + limit - 1),
@@ -42,9 +44,9 @@ class NewsPresenter @Inject constructor(private val newsInteractor: NewsBaseNews
 
                         Log.i(TAG, "Cache | loaded list from DB(${it * limit to (it * limit + limit - 1)})")
 
-                        Log.i(TAG, "Cache | list size = ${list.size}")
-
                         if (list.isEmpty()) {
+
+                            Log.i(TAG, "Cache | load remote using ${it}")
 
                             lastLoadedRemote.onNext(it)
 
@@ -67,6 +69,8 @@ class NewsPresenter @Inject constructor(private val newsInteractor: NewsBaseNews
         }
 
         val dispatcher1 = lastLoadedRemote.subscribe {
+
+            Log.i(TAG, "Remote | parameter = ${it + 1}")
 
             newsInteractor.executeRemoteObservable(
                 it + 1,
@@ -108,7 +112,7 @@ class NewsPresenter @Inject constructor(private val newsInteractor: NewsBaseNews
 
     }
 
-    override fun loadFrom(pos: Int) {
+    override fun loadFromPosition(pos: Int) {
 
         if (internetAvailable) {
 
@@ -141,7 +145,7 @@ class NewsPresenter @Inject constructor(private val newsInteractor: NewsBaseNews
 
 interface NewsPresenterInterface {
 
-    fun loadFrom(pos: Int)
+    fun loadFromPosition(pos: Int)
 
     fun onConnected()
     fun onDisconnected()

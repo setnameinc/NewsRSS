@@ -9,7 +9,7 @@ Fourth project
 
 **Main architcture scheme**
 
-  <img src="https://github.com/setnameinc/NewsRSS/blob/master/main_logic.jpg?raw=true" width="576" height="360" />
+  <img src="https://github.com/setnameinc/NewsRSS/blob/master/main_logic.jpg?raw=true" width="576" height="400" />
 
 
 **Detailed architecture:**
@@ -24,6 +24,6 @@ Fourth project
   
   - Interactor:
   
-    <img src="https://github.com/setnameinc/NewsRSS/blob/master/interactors.jpg?raw=true" width="360" height="576" />
+    <img src="https://github.com/setnameinc/NewsRSS/blob/master/interactors.jpg?raw=true" width="320" height="576" />
     
     

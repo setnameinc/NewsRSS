@@ -20,10 +20,28 @@ Fourth project
   
   - Presenter:
   
-    <img src="https://github.com/setnameinc/NewsRSS/blob/master/presenters.jpg?raw=true" width="360" height="576" />
+    <img src="https://github.com/setnameinc/NewsRSS/blob/master/presenters.jpg?raw=true" width="360" height="640" />
   
   - Interactor:
   
-    <img src="https://github.com/setnameinc/NewsRSS/blob/master/interactors.jpg?raw=true" width="320" height="576" />
+    <img src="https://github.com/setnameinc/NewsRSS/blob/master/interactors.jpg?raw=true" width="360" height="640" />
     
     
+
+**UI**:
+ - Main page 
+ 
+  <img src="https://github.com/setnameinc/NewsRSS/blob/master/main.gif?raw=true" width="360" height="640" />
+  
+ - Internet connection listener
+ 
+  <img src="https://github.com/setnameinc/NewsRSS/blob/master/interner_listener.gif?raw=true" width="360" height="640" />
+ 
+ - Open post
+ 
+  <img src="https://github.com/setnameinc/NewsRSS/blob/master/open.gif?raw=true" width="360" height="640" />
+  
+  - Rotation save state
+  
+  <img src="https://github.com/setnameinc/NewsRSS/blob/master/rotation.gif?raw=true" width="360" height="640" />
+  
